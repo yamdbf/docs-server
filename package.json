@@ -1,0 +1,12 @@
+{
+  "name": "yamdbf-docs-server",
+  "version": "0.1.0",
+  "description": "Builds and commits changes to yamdbf docs when new stable builds are pushed",
+  "main": "server.js",
+  "author": "Zack Campbell <zajrik@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.16.1",
+    "express": "^4.14.1"
+  }
+}
