@@ -28,26 +28,32 @@ server.post('/build/:id/:secret', (req, res) => {
 		description: 'Building docs...',
 		url: 'https://yamdbf.js.org'
 	}
+
 	const build = new Build(data);
 	build.start().then(() => {
 		try
 		{
 			let result;
-			if (branch === 'master')
+			let type = branch === 'master' ? 'indev' : 'stable';
+
+			console.log(`Starting docs build as of yamdbf/${type}#${req.body.after}`);
+			execSync(`git pull && npm install && gulp && npm run docs:${type}`, { cwd: config[type] })
+			let gitStatus = execSync(`cd ../yamdbf-docs && git status`, { cwd: config[type] }).toString();
+			if (gitStatus.includes('nothing to commit'))
 			{
-				console.log(`Starting docs build as of yamdbf/indev#${req.body.after}`);
-				result = execSync(`git pull && npm install && gulp && npm run docs:indev && cd ../yamdbf-docs && git commit -am "Build indev docs: ${req.body.after}" && git push`,
-					{ cwd: config.indev }).toString();
+				data.description = 'No docs changes.';
+				build.pass();
 			}
 			else
 			{
-				console.log(`Starting docs build as of yamdbf/stable#${req.body.after}`);
-				result = execSync(`git pull && npm install && gulp && npm run docs:stable && cd ../yamdbf-docs && git commit -am "Build stable docs: ${req.body.after}" && git push`,
-					{ cwd: config.stable }).toString();
+				result = execSync(`cd ../yamdbf-docs && git add --all && git commit -m "Build ${type} docs: ${req.body.after}" && git push`,
+					{ cwd: config[type] }).toString();
+				
+				console.log(result);
+				data.description = 'Successfully built docs.';
+				build.pass();
 			}
-			console.log(result);
-			data.description = 'Successfully built docs.';
-			build.pass();
+			
 			return res.send({ status: 200, body: 'Successfully built docs.'});
 		}
 		catch (err)
