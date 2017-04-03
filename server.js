@@ -25,13 +25,13 @@ server.post('/build/:id/:secret', (req, res) => {
 		if (branch === 'master')
 		{
 			console.log(`Starting docs build as of yamdbf/indev#${req.body.after}`);
-			result = execSync(`git pull && npm run docs:indev && cd ../yamdbf-docs && git commit -am "Build indev docs: ${req.body.after}" && git push`,
+			result = execSync(`git pull && gulp && npm run docs:indev && cd ../yamdbf-docs && git commit -am "Build indev docs: ${req.body.after}" && git push`,
 				{ cwd: config.indev }).toString();
 		}
 		else
 		{
-			console.log(`Starting docs build as of yamdbf/staff#${req.body.after}`);
-			result = execSync(`git pull && npm run docs:stable && cd ../yamdbf-docs && git commit -am "Build stable docs: ${req.body.after}" && git push`,
+			console.log(`Starting docs build as of yamdbf/stable#${req.body.after}`);
+			result = execSync(`git pull && gulp && npm run docs:stable && cd ../yamdbf-docs && git commit -am "Build stable docs: ${req.body.after}" && git push`,
 				{ cwd: config.stable }).toString();
 		}
 		console.log(result);
