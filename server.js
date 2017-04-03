@@ -14,7 +14,7 @@ server.post('/build/:id/:secret', (req, res) => {
 
 	const branch = req.body.ref.match(/refs\/heads\/(.+)/)[1];
 
-	if (branch !== 'stable')
+	if (!(branch === 'master' || branch === 'stable'))
 		return res.send({ status: 204, body: 'Untracked branch.'});
 	if (req.body.before === req.body.after)
 		return res.send({ status: 204, body: 'No changes.'});
@@ -22,12 +22,23 @@ server.post('/build/:id/:secret', (req, res) => {
 	try
 	{
 		console.log(`Starting docs build as of yamdbf/stable#${req.body.after}`);
-		const result = execSync(`npm run docs && cd ../yamdbf-docs && git add --all && git commit -m "Build docs: ${req.body.after}" && git push`, { cwd: config.cwd }).toString();
+		let result;
+		if (branch === 'master')
+		{
+			result = execSync(`git pull && npm run docs:indev && cd ../yamdbf-docs && git -am "Build indev docs: ${req.body.after}" && git push`,
+				{ cwd: config.indev }).toString();
+		}
+		else
+		{
+			result = execSync(`git pull && npm run docs:stable && cd ../yamdbf-docs && git -am "Build stable docs: ${req.body.after}" && git push`,
+				{ cwd: config.stable }).toString();
+		}
 		console.log(result);
 		return res.send({ status: 200, body: 'Successfully built docs.'});
 	}
 	catch (err)
 	{
+		console.error(err);
 		return res.send({ status: 500, body: 'Failed building docs.'});
 	}
 });
