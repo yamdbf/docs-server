@@ -37,7 +37,14 @@ server.post('/build/:id/:secret', (req, res) => {
 			let type = branch === 'master' ? 'indev' : 'stable';
 
 			console.log(`Starting docs build as of yamdbf/${type}#${req.body.after}`);
-			execSync(`git pull && npm install && gulp && npm run docs:${type}`, { cwd: config[type] })
+			execSync(`git pull && npm install && gulp`, { cwd: config[type] })
+
+			// Attempt to build the localization string list before building docs,
+			// ignoring the attempt if anything bad happens
+			try { execSync('npm run buildLocalizationMD', { cwd: config[type] }); }
+			catch (err) {}
+
+			execSync(`npm run docs:${type}`, { cwd: config[type] });
 			let gitStatus = execSync(`cd ../yamdbf-docs && git status`, { cwd: config[type] }).toString();
 			if (gitStatus.includes('nothing to commit'))
 			{
