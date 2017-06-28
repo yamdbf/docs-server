@@ -35,17 +35,20 @@ server.post('/build/:id/:secret', (req, res) => {
 		{
 			let result;
 			let type = branch === 'master' ? 'indev' : 'stable';
+			let opts = { cwd: config[type] };
 
 			console.log(`Starting docs build as of yamdbf/${type}#${req.body.after}`);
-			execSync(`git pull && npm install && gulp`, { cwd: config[type] })
+			execSync('git pull', opts);
+			try { execSync('rm -rf node_modules', opts); } catch (err) {}
+			try { execSync('rm package-lock.json', opts); } catch (err) {}
+			execSync('npm install && gulp', opts)
 
 			// Attempt to build the localization string list before building docs,
 			// ignoring the attempt if anything bad happens
-			try { execSync('npm run buildLocalizationMD', { cwd: config[type] }); }
-			catch (err) {}
+			try { execSync('npm run localization', opts); } catch (err) {}
 
-			execSync(`npm run docs:${type}`, { cwd: config[type] });
-			let gitStatus = execSync(`cd ../yamdbf-docs && git status`, { cwd: config[type] }).toString();
+			execSync(`npm run docs:${type}`, opts);
+			let gitStatus = execSync(`cd ../yamdbf-docs && git status`, opts).toString();
 			if (gitStatus.includes('nothing to commit'))
 			{
 				data.description = 'No docs changes.';
@@ -53,8 +56,9 @@ server.post('/build/:id/:secret', (req, res) => {
 			}
 			else
 			{
-				result = execSync(`cd ../yamdbf-docs && git add --all && git commit -m "Build ${type} docs: ${req.body.after}" && git push`,
-					{ cwd: config[type] }).toString();
+				result = execSync(
+					`cd ../yamdbf-docs && git add --all && git commit -m "Build ${type} docs: ${req.body.after}" && git push`,
+					opts).toString();
 				
 				console.log(result);
 				data.description = 'Successfully built docs.';
