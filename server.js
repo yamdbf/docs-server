@@ -38,6 +38,7 @@ server.post('/build/:id/:secret', (req, res) => {
 			let opts = { cwd: config[type] };
 
 			console.log(`Starting docs build as of yamdbf/${type}#${req.body.after}`);
+			execSync('git clean -df && git checkout .', opts);
 			execSync('git pull', opts);
 			try { execSync('rm -rf node_modules', opts); } catch (err) {}
 			try { execSync('rm package-lock.json', opts); } catch (err) {}
