@@ -26,7 +26,7 @@ server.post('/build/:id/:secret', (req, res) => {
 		token: config.token,
 		label: 'YAMDBF Docs Build',
 		description: 'Building docs...',
-		url: 'https://yamdbf.js.org'
+		url: `https://yamdbf.js.org${branch === 'master' ? '/indev' : ''}`
 	}
 
 	const build = new Build(data);
