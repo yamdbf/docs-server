@@ -41,7 +41,6 @@ server.post('/build/:id/:secret', (req, res) => {
 			execSync('git clean -df && git checkout .', opts);
 			execSync('git pull', opts);
 			try { execSync('rm -rf node_modules', opts); } catch (err) {}
-			try { execSync('rm package-lock.json', opts); } catch (err) {}
 			execSync('npm install && gulp', opts)
 
 			// Attempt to build the localization string list before building docs,
