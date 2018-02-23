@@ -7,7 +7,7 @@ const Build = require('github-build');
 const server = express();
 
 server.use(bodyParser.json());
-server.post('/build/:id/:secret', (req, res) => {
+server.post('/docs/:id/:secret', (req, res) => {
 	if (config[req.params.id] !== req.params.secret)
 		return res.send({ status: 403, body: 'Forbidden.'});
 	if (req.headers['x-github-event'] !== 'push')
@@ -41,13 +41,13 @@ server.post('/build/:id/:secret', (req, res) => {
 			execSync('git clean -df && git checkout .', opts);
 			execSync('git pull', opts);
 			try { execSync('rm -rf node_modules', opts); } catch (err) {}
-			execSync('npm install && gulp', opts)
+			execSync('yarn && gulp', opts)
 
 			// Attempt to build the localization string list before building docs,
 			// ignoring the attempt if anything bad happens
-			try { execSync('npm run localization', opts); } catch (err) {}
+			try { execSync('yarn localization', opts); } catch (err) {}
 
-			execSync(`npm run docs:${type}`, opts);
+			execSync(`yarn docs:${type}`, opts);
 			let gitStatus = execSync(`cd ../yamdbf-docs && git status`, opts).toString();
 			if (gitStatus.includes('nothing to commit'))
 			{
