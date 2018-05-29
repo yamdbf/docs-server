@@ -21,7 +21,7 @@ server.post('/docs/:id/:secret', (req, res) => {
 		return res.send({ status: 204, body: 'No changes.'});
 
 	const data = {
-		repo: 'zajrik/yamdbf',
+		repo: 'yamdbf/core',
 		sha: req.body.after,
 		token: config.token,
 		label: 'YAMDBF Docs Build',
